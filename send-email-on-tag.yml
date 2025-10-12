@@ -1,0 +1,28 @@
+name: Send Email On Tag Creation
+
+on:
+  create:
+
+jobs:
+  send_email:
+    if: ${{ contains(github.ref, 'refs/tags/') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send email
+        uses: dawidd6/action-send-mail@v3.8.0
+        with:
+          server_address: ${{ secrets.SERVER_ADDRESS }}
+          server_port: ${{ secrets.SERVER_PORT }}
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "New Tag Created: ${{ github.ref_name }}"
+          to: titarenkonazar548@gmail.com
+          from: titarenkonazar548@gmail.com  # Фіксований email
+          body: |
+            Hi there,
+
+            New tag ${{ github.ref_name }} created in ${{ github.repository }}
+
+            Kind regards,
+            GitHub Actions
+          convert_markdown: true
