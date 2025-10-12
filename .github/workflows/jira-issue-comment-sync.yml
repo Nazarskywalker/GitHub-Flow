@@ -1,0 +1,47 @@
+name: Add Jira Comment for Issue Comment
+
+on:
+  issue_comment: 
+    types: [created]
+
+jobs:
+  create_jira_comment:
+    if: ${{ !github.event.issue.pull_request }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Jira Login
+        uses: atlassian/gajira-login@v3
+        env:
+          JIRA_BASE_URL: https://titarenkonazar548.atlassian.net
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+      
+      - name: Get Jira Ticket ID
+        id: get_jira_ticket_id
+        uses: atlassian/gajira-find-issue-key@v3
+        with:
+          string: ${{ github.event.issue.body }}
+      
+      - name: Check if KAN project
+        id: check_kan
+        run: |
+          if echo "${{ steps.get_jira_ticket_id.outputs.issue }}" | grep -q "KAN-"; then
+            echo "is_kan=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_kan=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Create Jira comment
+        if: steps.get_jira_ticket_id.outputs.issue != '' && steps.check_kan.outputs.is_kan == 'true'
+        uses: atlassian/gajira-comment@v3
+        with:
+          issue: ${{ steps.get_jira_ticket_id.outputs.issue }}
+          comment: |
+            💬 *New GitHub Comment*
+            
+            *From:* ${{ github.event.comment.user.login }}
+            *GitHub Issue:* #${{ github.event.issue.number }}
+            *Link:* ${{ github.event.issue.html_url }}#issuecomment-${{ github.event.comment.id }}
+            
+            **Comment:**
+            ${{ github.event.comment.body }}
