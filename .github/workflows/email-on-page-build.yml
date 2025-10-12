@@ -1,0 +1,38 @@
+name: Send Email on Page Build
+
+on:
+  page_build:
+
+jobs:
+  send_email:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send email notification
+        uses: dawidd6/action-send-mail@v3.8.0
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.GMAIL_USERNAME }}
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          subject: "GitHub Pages Build: ${{ github.event.build.status }} - ${{ github.repository }}"
+          to: titarenkonazar548@gmail.com
+          from: titarenkonazar548@gmail.com
+          body: |
+            🚀 **GitHub Pages Build Notification**
+
+            **Repository:** ${{ github.repository }}
+            **Build Status:** ${{ github.event.build.status }}
+            **Build Time:** ${{ github.event.build.created_at }}
+            **Commit SHA:** `${{ github.sha }}`
+
+            📋 **Build Details:**
+            - Repository: ${{ github.repository }}
+            - Status: ${{ github.event.build.status }}
+            - Timestamp: ${{ github.event.build.created_at }}
+            - Pages URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+
+            Check the build details on GitHub for more information.
+
+            Best regards,
+            GitHub Pages Bot
+          convert_markdown: true
