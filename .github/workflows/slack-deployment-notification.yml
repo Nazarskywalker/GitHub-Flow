@@ -1,0 +1,23 @@
+name: Notify Slack of New Deployment
+
+on:
+  deployment:
+
+jobs:
+  slack-notification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Slack Message
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: 'C09LX5C9A6L'
+          slack-message: |
+            🚀 *НОВИЙ ДЕПЛОЙМЕНТ*
+            
+            *📦 Репозиторій:* ${{ github.repository }}
+            *🌍 Середовище:* ${{ github.event.deployment.environment || 'Не вказано' }}
+            *🌿 Гілка:* `${{ github.ref }}`
+            *👤 Запустив:* ${{ github.actor }}
+            *🆔 Коміт:* `${{ github.sha }}`
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_USER_ACCESS_TOKEN }}
