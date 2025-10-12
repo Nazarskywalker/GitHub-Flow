@@ -1,0 +1,89 @@
+name: Car Assembly Line Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build Car Components
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Create build directory
+      run: mkdir -p build
+      
+    - name: Create car assembly file
+      run: |
+        cd build
+        echo "Starting car assembly..." > car_components.txt
+        echo "✓ Chassis installed" >> car_components.txt
+        echo "✓ Engine mounted" >> car_components.txt
+        echo "✓ Wheels attached (4 units)" >> car_components.txt
+        echo "✓ Transmission system installed" >> car_components.txt
+        echo "✓ Electrical system configured" >> car_components.txt
+        echo "✓ Interior components installed" >> car_components.txt
+        echo "✓ Exterior body completed" >> car_components.txt
+        echo "Car assembly completed successfully!" >> car_components.txt
+        
+    - name: Display assembly progress
+      run: cat build/car_components.txt
+      
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: car-assembly-components
+        path: build/
+        retention-days: 7
+
+  test:
+    runs-on: ubuntu-latest
+    name: Test Car Components
+    needs: build
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: car-assembly-components
+        path: build/
+        
+    - name: Verify chassis installation
+      run: |
+        cd build
+        grep -q "✓ Chassis installed" car_components.txt && echo "✅ Chassis test PASSED" || (echo "❌ Chassis test FAILED" && exit 1)
+        
+    - name: Verify engine mounting
+      run: |
+        cd build
+        grep -q "✓ Engine mounted" car_components.txt && echo "✅ Engine test PASSED" || (echo "❌ Engine test FAILED" && exit 1)
+        
+    - name: Verify wheels attachment
+      run: |
+        cd build
+        grep -q "✓ Wheels attached" car_components.txt && echo "✅ Wheels test PASSED" || (echo "❌ Wheels test FAILED" && exit 1)
+        
+    - name: Verify transmission system
+      run: |
+        cd build
+        grep -q "✓ Transmission system installed" car_components.txt && echo "✅ Transmission test PASSED" || (echo "❌ Transmission test FAILED" && exit 1)
+        
+    - name: Verify electrical system
+      run: |
+        cd build
+        grep -q "✓ Electrical system configured" car_components.txt && echo "✅ Electrical system test PASSED" || (echo "❌ Electrical system test FAILED" && exit 1)
+        
+    - name: Complete assembly verification
+      run: |
+        cd build
+        echo "=== FINAL ASSEMBLY VERIFICATION ==="
+        cat car_components.txt
+        echo "All components verified successfully! 🚗"
