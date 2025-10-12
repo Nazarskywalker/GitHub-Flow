@@ -1,0 +1,57 @@
+name: Car Factory Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    name: Build stage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Create build folder
+        run: mkdir -p build
+
+      - name: Create assembly file
+        run: echo "Car Assembly Process Started" > build/car.txt
+
+      - name: Add parts to car
+        run: |
+          echo "Installing body" >> build/car.txt
+          echo "Installing engine" >> build/car.txt
+          echo "Installing wheels" >> build/car.txt
+          echo "Installing doors" >> build/car.txt
+          echo "Car assembly complete!" >> build/car.txt
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: car-artifacts
+          path: build/
+
+  test:
+    name: Test stage
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: car-artifacts
+          path: build/
+
+      - name: Check file exists
+        run: test -f build/car.txt
+
+      - name: Verify parts
+        run: |
+          grep -q "body" build/car.txt
+          grep -q "engine" build/car.txt
+          grep -q "wheels" build/car.txt
+          grep -q "doors" build/car.txt
+          echo "All parts found! ✅"
