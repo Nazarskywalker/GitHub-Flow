@@ -1,0 +1,47 @@
+name: Notify Slack of Pull Request Actions
+
+on:
+  pull_request: 
+    types: [opened, review_requested]
+
+jobs:
+  send_opened_notification:
+    if: ${{ github.event.action == 'opened' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Slack Message
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: 'C09LX5C9A6L'
+          slack-message: |
+            🔔 *НОВИЙ PULL REQUEST*
+            
+            *👤 Автор:* ${{ github.event.pull_request.user.login }}
+            *📌 Назва:* "${{ github.event.pull_request.title }}"
+            *🌿 Гілка:* ${{ github.event.pull_request.head.ref }} → ${{ github.event.pull_request.base.ref }}
+            *🔗 Посилання:* ${{ github.event.pull_request.html_url }}
+            
+            *Опис:*
+            ${{ github.event.pull_request.body || 'Без опису' }}
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_USER_ACCESS_TOKEN }}
+
+  send_review_requested_notification:
+    if: ${{ github.event.action == 'review_requested' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Slack Message
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: 'C09LX5C9A6L'
+          slack-message: |
+            👀 *ЗАПИТ НА РЕВ'Ю*
+            
+            *👤 Запитав:* ${{ github.event.sender.login }}
+            *👨‍💻 Рев'ювер:* ${{ github.event.requested_reviewer.login }}
+            *📌 PR:* "${{ github.event.pull_request.title }}"
+            *🔗 Посилання:* ${{ github.event.pull_request.html_url }}
+            
+            _Чекаємо на ваш відгук!_
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_USER_ACCESS_TOKEN }}
