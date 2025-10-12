@@ -1,0 +1,26 @@
+name: Notify Slack of Deployment Status
+
+on:
+  # Will trigger this workflow when a deployment status changes
+  deployment_status:
+
+jobs:
+  slack-notification:
+    runs-on: ubuntu-latest
+    steps:
+      # Sends a Slack message with the updated deployment status
+      - name: Send Slack Message
+        uses: archive/github-actions-slack@v2.7.0
+        with:
+          slack-bot-user-oauth-access-token: ${{ secrets.SLACK_BOT_USER_ACCESS_TOKEN }}
+          slack-channel: C09LX5C9A6L
+          slack-text: |
+            📊 *СТАТУС ДЕПЛОЙМЕНТУ ОНОВЛЕНО*
+            
+            *📦 Репозиторій:* ${{ github.repository }}
+            *🌿 Гілка:* `${{ github.ref }}`
+            *🔄 Статус:* `${{ github.event.deployment_status.state }}`
+            *👤 Користувач:* ${{ github.actor }}
+            *🔑 Коміт:* `${{ github.sha }}`
+            
+            *Опис:* ${{ github.event.deployment_status.description || 'Немає опису' }}
