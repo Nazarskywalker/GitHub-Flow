@@ -8,24 +8,37 @@ jobs:
     if: github.event.ref_type == 'branch'
     runs-on: ubuntu-latest
     steps:
-      # Authenticate with Jira first
       - name: Jira Login
         uses: atlassian/gajira-login@v3
         env:
-          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_BASE_URL: https://titarenkonazar548.atlassian.net
           JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
           JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
       
-      # Find the Jira issue ID in the branch name
       - name: Find Jira Key in Branch Name
         id: find_issue_key
         uses: atlassian/gajira-find-issue-key@v3
         with:
           from: branch
       
-      # Add a comment to the issue if found
-      - name: Comment on issue
+      - name: Check if KAN project
+        id: check_kan
+        run: |
+          if echo "${{ steps.find_issue_key.outputs.issue }}" | grep -q "KAN-"; then
+            echo "is_kan=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_kan=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Comment on KAN issue
+        if: steps.find_issue_key.outputs.issue != '' && steps.check_kan.outputs.is_kan == 'true'
         uses: atlassian/gajira-comment@v3
         with:
           issue: ${{ steps.find_issue_key.outputs.issue }}
-          comment: The ${{ github.event.ref }} branch was deleted in GitHub.
+          comment: |
+            🗑️ Branch **${{ github.event.ref }}** was deleted in GitHub.
+            
+            **Details:**
+            - Repository: ${{ github.repository }}
+            - Deleted by: ${{ github.actor }}
+            - Time: ${{ github.event.created_at }}
