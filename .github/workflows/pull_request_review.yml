@@ -1,0 +1,27 @@
+name: Notify Slack of Pull Request Review
+
+on:
+  pull_request_review: 
+    types: [submitted]
+
+jobs:
+  send_review_submitted_notification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Slack Message
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: 'C09LX5C9A6L'
+          slack-message: |
+            📝 *НОВИЙ РЕВ'Ю ДО PULL REQUEST*
+            
+            *👤 Рев'ювер:* ${{ github.event.review.user.login }}
+            *📌 PR:* "${{ github.event.pull_request.title }}"
+            *👤 Автор PR:* ${{ github.event.pull_request.user.login }}
+            *🏷️ Статус рев'ю:* ${{ github.event.review.state }}
+            *🔗 Посилання:* ${{ github.event.pull_request.html_url }}
+            
+            *Коментар рев'ювера:*
+            ${{ github.event.review.body || 'Без коментаря' }}
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_USER_ACCESS_TOKEN }}
